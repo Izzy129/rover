@@ -18,7 +18,7 @@ class WheelRPMCalculator(Node):
         self.axle_length = self.get_parameter('axle_length').get_parameter_value().double_value
 
         # Set up serial communication (adjust to your port and baud rate)
-        self.serial_port = serial.Serial('/dev/ttyUSB0', 9600)  # Example for Linux, adjust as needed
+        self.serial_port = serial.Serial('/dev/ttyACM0', 9600)  # Example for Linux, adjust as needed
         
         # Subscriber to receive velocity commands (Twist message)
         self.subscription = self.create_subscription(
@@ -73,7 +73,9 @@ class WheelRPMCalculator(Node):
     def send_rpms_to_arduino(self, rpm_fl, rpm_fr, rpm_rl, rpm_rr):
         # Format the RPM data into a string and send it to the Arduino
         message = f"{rpm_fl:.2f},{rpm_fr:.2f},{rpm_rl:.2f},{rpm_rr:.2f}\n"
-        self.serial_port.write(message.encode())  # Send data to Arduino over serial
+        for index, element in enumerate(message.split(',')):
+            command = "M" + str(index) + ":set_velocity_rpm:" + str(element) + "&"
+            self.serial_port.write(command.encode())  # Send data to Arduino over serial
         self.get_logger().info(f"Sent RPM data to Arduino: {message.strip()}")
 
 def main(args=None):
