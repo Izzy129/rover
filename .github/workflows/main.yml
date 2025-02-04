@@ -1,0 +1,40 @@
+name: Install ROS 2 Humble and Gazebo Fortress using Ubuntu v22.04
+
+# Run manually
+on:
+  # workflow_dispatch basically makes it runnable manually via GitHub Actions dashboard
+  # can also put input to use in action later (see example below)
+  # since this should just be a one-time thing, let's not worry about inputs for now
+  workflow_dispatch:
+    # inputs:
+    #   example_input:
+    #     description: 'Description of the input'
+    #     required: true
+    #     default: 'default value'
+    
+jobs:
+  test_gazebo:
+      env:
+        ROS_DISTROS: 'humble'
+      runs-on: ubuntu-22.04
+      container:
+        image: ubuntu:jammy
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-node@v4.0.3
+          with:
+            node-version: '20.x'
+        - name: 'Install ROS 2 Iron'
+          uses: ros-tooling/setup-ros@v0.7
+          with:
+            required-ros-distributions: ${{ env.ROS_DISTROS }}
+        - name: 'Install Gazebo Fortress with ros_gz'
+          uses: gazebo-tooling/setup-gazebo@v0.3.0
+          with:
+            required-gazebo-distributions: 'fortress'
+            install-ros-gz: ${{ env.ROS_DISTROS }}
+        - name: Test Humble ros_gz installation
+          run: |
+            source /opt/ros/iron/setup.bash
+            ros2 pkg list | grep ros_gz
+            gz sim --version | grep 'version 8.[0-9*].[0-9*]'
