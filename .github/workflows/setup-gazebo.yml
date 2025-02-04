@@ -1,0 +1,23 @@
+name: Setup Gazebo Environment
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Gazebo Environment
+        uses: ./  # This points to the root of your repository where action.yml is located
+        with:
+          required-gazebo-distributions: 'fortress'
+          install-ros-gz: 'humble'
