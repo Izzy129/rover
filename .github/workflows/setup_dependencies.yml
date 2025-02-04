@@ -1,0 +1,48 @@
+name: 'Setup Gazebo environment'
+description: |
+  Install system dependencies required to build software using Gazebo or to run Gazebo simulations
+branding:
+  icon: "box"
+  color: "gray-dark"
+inputs:
+  required-gazebo-distributions:
+    description: |
+      List of Gazebo distributions to be installed.
+
+      Allowed Gazebo distributions:
+      - citadel
+      - fortress
+      - harmonic
+      - ionic
+
+      Multiple values can be passed using a whitespace-delimited list
+      "fortress harmonic".
+    required: false
+    default: ''
+  use-gazebo-prerelease:
+    description: |
+      Use pre-release binaries from OSRF repository
+    required: false
+    default: 'false'
+  use-gazebo-nightly:
+    description: |
+      Use nightly binaries from OSRF repository
+    required: false
+    default: 'false'
+  install-ros-gz:
+    description: |
+      Install the ROS 2 Gazebo bridge (ros_gz)
+
+      Allowed ROS 2 distributions:
+      - humble
+      - iron
+      - jazzy
+      - rolling
+
+      Multiple values can be passed using a whitespace-delimited list
+      "humble iron".
+    required: false
+    default: ''
+runs:
+  using: node20
+  main: dist/index.js
