@@ -1,4 +1,3 @@
-
 #include <DynamixelShield.h>
 #include <SoftwareSerial.h>
 
@@ -10,15 +9,16 @@ const uint8_t DXL_ID_3 = 3;
 const uint8_t DXL_ID_4 = 4;
 const float DXL_PROTOCOL_VERSION = 2.0;
 
+#define STOP 0
+#define MOVE_FORWARD 1
+#define MOVE_BACKWARDS 2
+#define ROTATE_LEFT 3
+#define ROTATE_RIGHT 4
 
 #define MOTOR_MODE_POSITION 0
 #define MOTOR_MODE_VELOCITY 1
 
 #define DEBUG
-
-#define VELOCITY 50
-#define MOTOR_ID_ERROR "Invalid Motor Id \"%c\"\n"
-#define FORMATTING_ERROR_C "Invalid formatting Error: Invalid character \"%c\" at position %d\n"
 
 String inputString = "";
 
@@ -28,7 +28,6 @@ DynamixelShield dxl;
 using namespace ControlTableItem;
 
 void setup() {
-  Serial.begin(9600); // opens serial port, sets data rate to 9600 bps
   // put your setup code here, to run once:
   
   // For Uno, Nano, Mini, and Mega, use UART port of DYNAMIXEL Shield to debug.
@@ -62,28 +61,74 @@ void setup() {
   soft_serial.begin(9600);
 }
 
-void loop() {
-  if (Serial.available() > 0) {
-    // Read the incoming byte
-    String message = Serial.readString();
-    //Print the received message back to the serial monitor
-    Serial.print("Received: ");
-    Serial.println(message);
+#define VELOCITY 50
 
-    
-    
-  }
-}
+// void setState(int state_id)
+// {
+//   switch (state_id)
+//   {
+//     case STOP:
+//       dxl.setGoalVelocity(DXL_ID_1, 0);
+//       dxl.setGoalVelocity(DXL_ID_2, -0);
+//       dxl.setGoalVelocity(DXL_ID_3, -0);
+//       dxl.setGoalVelocity(DXL_ID_4, 0);
+//       break;
+//     case MOVE_FORWARD:
+//       dxl.setGoalVelocity(DXL_ID_1, VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_2, -VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_3, -VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_4, VELOCITY);
+//       break;
+//     case MOVE_BACKWARDS:
+//       dxl.setGoalVelocity(DXL_ID_1, -VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_2, VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_3, VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_4, -VELOCITY);
+//       break;
+//     case ROTATE_LEFT:
+//       dxl.setGoalVelocity(DXL_ID_1, VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_2, VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_3, VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_4, VELOCITY);
+//       break;
+//     case ROTATE_RIGHT:
+//       dxl.setGoalVelocity(DXL_ID_1, -VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_2, -VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_3, -VELOCITY);
+//       dxl.setGoalVelocity(DXL_ID_4, -VELOCITY);
+//       break;
+//   }
+// }
 
-
+#define MOTOR_ID_ERROR "Invalid Motor Id \"%c\"\n"
+#define FORMATTING_ERROR_C "Invalid formatting Error: Invalid character \"%c\" at position %d\n"
 
 void motor_command() // Example Motor Command "M1:position:100&"
 {
   // Getting motor id
   char id = inputString.charAt(1) - '0';
 
+  // checking for valid id 1,2,3 or 4
+  #ifdef DEBUG
+  if (id < 1 || id > 4) {
+    soft_serial.println("Invalid Motor Id \""+String(inputString.charAt(1))+"\"");
+    return;
+  }
+  
+  if (inputString.charAt(2) != ':') {
+    soft_serial.println("Invalid formatting Error: Invalid character \""+String(inputString.charAt(2))+"\" at position 2");
+    return;
+  }
+  #endif
+
   // Getting the command
   int arg_position = inputString.indexOf(':', 3);
+
+  #ifdef DEBUG
+  if (arg_position == -1) {
+    soft_serial.println("Formatting Error: Unable to find the : needed to mark the end of an argument");
+  }
+  #endif
 
   String motor_command = inputString.substring(3, arg_position);
   int value_arg_pos = inputString.indexOf('&', arg_position+1);
